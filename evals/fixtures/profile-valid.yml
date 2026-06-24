@@ -1,0 +1,52 @@
+course:
+  code: TEST-101
+  title: Eval Course
+  term: Spring 2026
+  institution: Test U
+  instructor: Tester
+
+sources:
+  - id: syllabus
+    type: syllabus
+    path: /abs/syllabus.pdf
+    label: "Course syllabus"
+    covers: "weeks 1-2"
+  - id: workbook-ch3
+    type: workbook
+    path: /abs/workbook.pdf
+    label: "Workbook ch.3"
+    covers: "week 3"
+  - id: pr-ethics
+    type: research
+    query: "PR ethics codes 2024"
+    cached_to: sources/pr-ethics.md
+    label: "PR ethics codes (researched)"
+    covers: "week 6"
+
+quiz_defaults:
+  items_per_quiz: 3
+  question_types:
+    - multiple_choice
+    - true_false
+  points_per_item: 2
+  source_tagging: required
+  time_limit: null
+  shuffle_answers: true
+  workflow_state: unpublished
+
+rubric_defaults:
+  scale_type: points
+  total_points: 100
+  criteria_count: 4
+  rating_levels: 4
+
+module_defaults: null
+
+output:
+  dir: ./build
+  package_naming: "{slug}.zip"
+  on_verify_fail: halt
+  export_format: qti
+  rubric_export: cc_rubrics
+
+generated_at: 2026-06-24T12:00:00

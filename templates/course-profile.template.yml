@@ -1,0 +1,67 @@
+# course-profile.yml — single source of truth for canvas-course-builder
+#
+# CONVENTION: each worker reads ONLY its own section + `course` + `sources`.
+# If a field is unknown, leave it `null`. Workers must handle `null`, not guess.
+# Indent with 2 spaces. Do not use tabs.
+
+course:
+  code: null            # e.g. MC320-01
+  title: null           # e.g. Media News
+  term: null            # e.g. Spring 2026
+  institution: null     # e.g. Southeast Missouri State University
+  instructor: null
+
+# Every artifact item must trace to one of these source ids (see source_tagging).
+# type: workbook | textbook | syllabus | slides | notes | research | other
+sources:
+  - id: syllabus              # short, kebab-case, unique
+    type: syllabus
+    path: null                # absolute path to a dropped file (file-backed types)
+    query: null               # search query (type: research only)
+    cached_to: null           # sources/<id>.md — intake caches research results here
+    label: null               # human label shown in trace.json
+    covers: null              # e.g. "weeks 1-2"
+  # - id: pr-ethics
+  #   type: research
+  #   path: null
+  #   query: "PR ethics codes 2024"
+  #   cached_to: sources/pr-ethics.md
+  #   label: "PR ethics codes (researched)"
+  #   covers: "week 6"
+
+# Owned by question-worker.
+quiz_defaults:
+  items_per_quiz: 10
+  question_types:             # subset of: multiple_choice, true_false
+    - multiple_choice
+    - true_false
+  points_per_item: 2
+  difficulty_mix: null        # e.g. "easy:3, medium:5, hard:2" or null
+  blooms_target: null         # e.g. "remember, understand, apply" or null
+  time_limit: null            # integer minutes, or null for none
+  shuffle_answers: true
+  show_correct_answers: false
+  allowed_attempts: 1
+  workflow_state: unpublished # published | unpublished
+  source_tagging: required    # required | optional
+
+# Owned by rubric-worker.
+rubric_defaults:
+  scale_type: points          # points | ranges
+  total_points: 100
+  criteria_count: 5
+  criteria_style: null        # e.g. "analytic" | "holistic" | null
+  rating_levels: 4            # number of performance levels per criterion
+
+# Owned by module-worker (DEFERRED in v1 — leave null).
+module_defaults: null
+
+# Owned by every writer + the verifier.
+output:
+  dir: ./build
+  package_naming: "{slug}.zip"
+  on_verify_fail: halt        # halt | flag_and_continue
+  export_format: qti          # qti (only format wired in v1)
+  rubric_export: cc_rubrics   # cc_rubrics | csv_markdown
+
+generated_at: null            # intake stamps this (ISO 8601)

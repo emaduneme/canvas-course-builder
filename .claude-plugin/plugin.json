@@ -1,0 +1,21 @@
+{
+  "name": "canvas-course-builder",
+  "version": "0.1.0",
+  "description": "Turn dropped course materials plus a short interview into verified, Canvas-importable artifacts (quizzes and rubrics), governed by course-profile.yml as the single source of truth. Intake interviews and writes the profile; context-isolated workers generate tagged quizzes and rubrics; a verifier enforces source traceability and points integrity and emits a trace.json audit trail.",
+  "author": {
+    "name": "Emmanuel Maduneme"
+  },
+  "license": "MIT",
+  "keywords": [
+    "canvas",
+    "lms",
+    "qti",
+    "common-cartridge",
+    "quiz",
+    "rubric",
+    "education"
+  ],
+  "commands": "./commands",
+  "agents": "./agents",
+  "skills": "./skills"
+}

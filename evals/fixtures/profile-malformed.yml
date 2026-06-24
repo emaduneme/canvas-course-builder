@@ -1,0 +1,8 @@
+course:
+  code: BROKEN
+sources:
+  - id: syllabus
+    type syllabus
+  this line has no colon and bad indent
+quiz_defaults:
+points_per_item 2
