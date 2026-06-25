@@ -106,6 +106,28 @@ references/                    profile-schema.md · research-integration.md
 evals/                         run_evals.py · fixtures/
 ```
 
+## Commands and agents
+
+You only ever type one command. The agents are dispatched for you, in order, by the orchestrator — they're listed here so you (or your AI agent) can see exactly what runs and when.
+
+**Commands**
+
+| Command | What it does |
+|---|---|
+| `/course-build` | Build verified, Canvas-importable artifacts (quizzes + rubrics) from a course profile. The single entry point. |
+
+**Agents** (run automatically by the pipeline, in this order)
+
+| Agent | Role | When it runs |
+|---|---|---|
+| `intake` | Interviews you, catalogs your dropped files, runs optional research for `type: research` sources, and writes `course-profile.yml` — the single source of truth. | First |
+| `question-worker` | Drafts a tagged `source.md` quiz honoring `quiz_defaults`, then builds the Canvas QTI/Common-Cartridge package. Sees only `quiz_defaults` + `course` + `sources`. | Build |
+| `rubric-worker` | Drafts a grading rubric whose criteria sum exactly to `total_points`, exported in your chosen format. Sees only `rubric_defaults` + `course` + `sources`. | Build |
+| `verifier` | Checks source traceability and points integrity, runs the QTI structural checks, and writes the `trace.json` receipt. Honors `output.on_verify_fail` (`halt` or `flag_and_continue`). | Last |
+| `module-worker` | Deferred stub for v1 — documents intended Canvas module-building so v2 can fill it in. The orchestrator never dispatches it yet. | Not wired up |
+
+Each worker is handed only its own slice of the profile (plus `course` and `sources`), so one agent can't quietly depend on another's state.
+
 ## Checking that it works
 
 ```bash
