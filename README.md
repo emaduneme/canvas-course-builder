@@ -14,7 +14,7 @@ nothing reaches the instructor until a verifier proves traceability and points i
 |---|---|
 | Quiz | IMS Common Cartridge 1.1.3 + QTI 1.2 package (zip → Canvas import) |
 | Rubric | Canvas CC `rubrics.xml` (default) or paste-able CSV/markdown |
-| Audit trail | `trace.json` beside each package (`item → {source_id, locator, points}` + checks) |
+| Audit trail | `trace.json` beside each package — an `items` list of `{item, source_id, locator, points}` plus a `checks` list |
 
 ## Pipeline
 

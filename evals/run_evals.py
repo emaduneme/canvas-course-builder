@@ -88,6 +88,20 @@ code, rep = run_verify(['--profile', PROFILE, '--kind', 'quiz',
 check('quiz_points_mismatch_fails', code, rep, want_pass=False,
       must_fail_check='points_sum_matches')
 
+# 6a. declared total under a label variant ("Points Possible") is actually read.
+# Only passes if parse_declared_points reads 9 from the label-variant cell; the
+# points_per_item*count fallback (2*3=6) would make this FAIL.
+code, rep = run_verify(['--profile', PROFILE, '--kind', 'quiz',
+                        '--source', os.path.join(FIX, 'quiz-label-variant.md')])
+check('declared_total_label_variant_read', code, rep, want_pass=True)
+
+# 6b. a malformed points value (`[points: 2.5.0]`) must not crash the verifier.
+# run_verify would raise (and abort the whole suite) if float() were unguarded.
+code, rep = run_verify(['--profile', PROFILE, '--kind', 'quiz',
+                        '--source', os.path.join(FIX, 'quiz-malformed-points.md')])
+record('malformed_points_no_crash', rep.get('profile_parsed') is True and 'checks' in rep,
+       f"completed without crashing; passed={rep.get('passed')}")
+
 # 7. rubric criteria sum to total_points (good) passes
 code, rep = run_verify(['--profile', PROFILE, '--kind', 'rubric',
                         '--rubric', os.path.join(FIX, 'rubric-good.md')])

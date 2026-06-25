@@ -27,7 +27,8 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/course-builder/scripts/verify.py \
 
 # QTI structural checks on the built package
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/course-builder/scripts/verify.py \
-  --profile course-profile.yml --kind qti --package quizzes/<slug>/<guid>/
+  --profile course-profile.yml --kind qti --package quizzes/<slug>/<guid>/ \
+  --out quizzes/<slug>/<guid>/qti-trace.json
 
 # Rubric criteria sum
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/course-builder/scripts/verify.py \
@@ -53,8 +54,19 @@ The report's `passed` is true only when **all** checks pass. Read `output.on_ver
 - `flag_and_continue` → pass the artifact through but attach the failed-check details as a
   prominent warning.
 
-`trace.json` (the `item → {source_id, locator, points}` map plus the checks) is the shareable
-audit trail; always emit it, pass or fail.
+`trace.json` is the shareable audit trail; pass `--out` and always emit it, pass or fail. Its shape
+(as written by `verify.py`):
+
+```json
+{
+  "kind": "quiz", "slug": "...", "passed": true, "disposition": "pass",
+  "items":  [ { "item": "Q1", "source_id": "...", "locator": "...", "points": 2.0 } ],
+  "checks": [ [ "every_item_tagged", true, "all items carry a [src: …] tag" ] ]
+}
+```
+
+`items` is a **list** of item records (the quiz/rubric trace map; empty `[]` for `kind: qti`,
+whose value is its structural `checks`). `checks` is a list of `[name, ok, detail]` triples.
 
 ## Output
 

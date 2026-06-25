@@ -38,9 +38,10 @@ make every section either correct or explicitly `null`.
    question is authored. This keeps the verifier invariant intact: every item must trace to a
    real, local source file. Record the real citations inside that cached file.
 
-5. **Stamp and validate.** Set `generated_at` to the current ISO 8601 timestamp. Confirm the
-   profile parses by running the verifier's parser:
-   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/course-builder/scripts/verify.py --profile course-profile.yml --kind quiz --source /dev/null` is **not** how you validate — instead just load it; the orchestrator re-validates. Keep indentation at 2 spaces, no tabs.
+5. **Stamp and finish.** Set `generated_at` to the current ISO 8601 timestamp. Re-read the file
+   you wrote to confirm it is well-formed YAML — 2-space indentation, no tabs, unknown fields left
+   `null`. You do not run the verifier here; the orchestrator validates the profile (and halts on a
+   parse failure) before dispatching workers. Hand the profile back to the orchestrator.
 
 ## Output
 

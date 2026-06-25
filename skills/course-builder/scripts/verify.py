@@ -149,8 +149,22 @@ def parse_yaml(text):
 # Source.md parsing
 # --------------------------------------------------------------------------- #
 TAG_RE = re.compile(r'\[src:\s*([^\]\s]+)\s*([^\]]*)\]')
-POINTS_RE = re.compile(r'\[points:\s*([0-9.]+)\s*\]')
+# Tight numeric capture: `\d+(\.\d+)?` so a malformed value like `2.5.0` simply
+# fails to match (points -> None) instead of reaching float() and crashing.
+POINTS_RE = re.compile(r'\[points:\s*(\d+(?:\.\d+)?)\s*\]')
 ITEM_HEADER_RE = re.compile(r'^#{2,4}\s+(Q\d+)\b(.*)$')
+# Settings-table label cells that declare the quiz total, e.g. `| Points |`,
+# `| Points Possible |`, `| Total Points |`.
+POINTS_LABEL_RE = re.compile(r'^(?:total\s+)?points(?:\s+possible)?$', re.I)
+
+
+def _safe_float(s):
+    """float(s) that returns None instead of raising — every numeric coercion in
+    this module routes through here so malformed input is a failed check, never a crash."""
+    try:
+        return float(s)
+    except (TypeError, ValueError):
+        return None
 
 
 def parse_source_items(text):
@@ -167,19 +181,26 @@ def parse_source_items(text):
             'item': label,
             'source_id': tag.group(1) if tag else None,
             'locator': (tag.group(2).strip() or None) if tag else None,
-            'points': float(pts.group(1)) if pts else None,
+            'points': _safe_float(pts.group(1)) if pts else None,
             'raw': line.strip(),
         })
     return items
 
 
 def parse_declared_points(text):
-    """Pull the total from a Settings table row like `| Points | 20 (2 per question) |`."""
+    """Pull the total from a Settings table row whose label cell is some form of
+    `Points` (`Points`, `Points Possible`, `Total Points`), e.g.
+    `| Points | 20 (2 per question) |`. Returns the first number in the value cell."""
     for line in text.splitlines():
-        if re.search(r'\|\s*Points\s*\|', line, re.I):
-            m = re.search(r'\|\s*Points\s*\|\s*([0-9.]+)', line, re.I)
-            if m:
-                return float(m.group(1))
+        if '|' not in line:
+            continue
+        cells = [c.strip() for c in line.strip().strip('|').split('|')]
+        for idx, cell in enumerate(cells):
+            if POINTS_LABEL_RE.match(cell):
+                for nxt in cells[idx + 1:]:
+                    m = re.search(r'(\d+(?:\.\d+)?)', nxt)
+                    if m:
+                        return _safe_float(m.group(1))
     return None
 
 
@@ -209,9 +230,9 @@ def parse_rubric_criteria(path):
             continue
         pts = None
         for c in cells[1:]:
-            m = re.match(r'^([0-9.]+)$', c)
+            m = re.match(r'^(\d+(?:\.\d+)?)$', c)
             if m:
-                pts = float(m.group(1))
+                pts = _safe_float(m.group(1))
                 break
         out.append({'criterion': cells[0], 'points': pts})
     return out
@@ -303,22 +324,34 @@ def check_qti(package_dir):
     checks.append(('package_has_xml', bool(xml_files), f"{len(xml_files)} xml file(s)"))
     manifest = next((p for p in xml_files if os.path.basename(p) == 'imsmanifest.xml'), None)
     checks.append(('manifest_present', manifest is not None, "imsmanifest.xml found"))
+    man = _read(manifest) if manifest else ''
+    qti = None
     if manifest:
-        man = _read(manifest)
-        hrefs = re.findall(r'href="([^"]+)"', man)
         base = os.path.dirname(manifest)
+        hrefs = re.findall(r'href="([^"]+)"', man)
         missing = [h for h in hrefs if not os.path.exists(os.path.join(base, h))]
         checks.append(('manifest_paths_resolve', not missing,
                        "all <file href> paths resolve" if not missing
                        else f"missing: {', '.join(missing)}"))
-    qti = next((p for p in xml_files if p != manifest and 'assessment_meta' not in p), None)
+        # Identify the QTI file from the manifest's declared resource, not a path guess.
+        block = re.search(r'<resource\b[^>]*type="imsqti_xmlv1p2".*?</resource>', man, re.S)
+        if block:
+            href = re.search(r'<file\s+href="([^"]+)"', block.group(0))
+            if href:
+                cand = os.path.join(base, href.group(1))
+                if os.path.exists(cand):
+                    qti = cand
+    if qti is None:  # fallback: any xml that is neither the manifest nor the meta file
+        qti = next((p for p in xml_files
+                    if p != manifest and os.path.basename(p) != 'assessment_meta.xml'), None)
     if qti:
         q = _read(qti)
         idents = re.findall(r'<item ident="([^"]+)"', q)
         checks.append(('unique_item_guids', len(idents) == len(set(idents)),
                        f"{len(idents)} items, {len(set(idents))} unique"))
         labels = set(re.findall(r'<response_label ident="([^"]+)"', q))
-        correct = re.findall(r'<varequal respident="response1">([^<]+)</varequal>', q)
+        # respident-agnostic: any <varequal …> correct-answer ident, not only response1.
+        correct = [c.strip() for c in re.findall(r'<varequal\b[^>]*>([^<]+)</varequal>', q)]
         bad = [c for c in correct if c not in labels]
         checks.append(('correct_idents_map', not bad,
                        "every varequal maps to a response_label" if not bad
