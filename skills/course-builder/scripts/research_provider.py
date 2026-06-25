@@ -29,9 +29,3 @@ def resolve_provider(has_perplexity_key=None, has_apify=None, env=None):
     if has_apify:
         return 'apify'
     return 'websearch'
-
-
-if __name__ == '__main__':
-    import sys
-    print(resolve_provider())
-    sys.exit(0)

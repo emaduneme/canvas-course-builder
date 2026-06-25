@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "canvas-course-builder",
+  "description": "Build verified, Canvas-importable quizzes and rubrics from your own course materials.",
+  "owner": {
+    "name": "Emmanuel Maduneme"
+  },
+  "plugins": [
+    {
+      "name": "canvas-course-builder",
+      "description": "Turn course materials plus a short interview into Canvas-ready quizzes and rubrics, governed by course-profile.yml. Every question traces to a real source, and a verifier enforces points integrity before anything reaches you.",
+      "source": "./",
+      "category": "education"
+    }
+  ]
+}

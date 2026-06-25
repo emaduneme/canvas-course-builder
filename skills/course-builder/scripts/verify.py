@@ -139,10 +139,8 @@ def parse_yaml(text):
 
     try:
         return block()
-    except YAMLError:
-        raise
-    except Exception as e:  # noqa: BLE001 — surface parse failures as YAMLError
-        raise YAMLError(str(e))
+    except Exception as e:  # noqa: BLE001 — surface any parse failure as YAMLError
+        raise YAMLError(str(e)) from e
 
 
 # --------------------------------------------------------------------------- #
@@ -208,17 +206,10 @@ def parse_declared_points(text):
 # Rubric parsing (markdown table or yaml-ish list)
 # --------------------------------------------------------------------------- #
 def parse_rubric_criteria(path):
-    """Return list of {criterion, points}. Supports a .yml criteria list or a
-    markdown table whose first numeric column per row is the criterion points."""
+    """Return list of {criterion, points} from a markdown table whose first
+    numeric column per row is the criterion's point value (the format the
+    rubric-worker always emits)."""
     text = _read(path)
-    if path.endswith('.yml') or path.endswith('.yaml'):
-        data = parse_yaml(text)
-        crit = data.get('criteria') if isinstance(data, dict) else data
-        out = []
-        for c in (crit or []):
-            out.append({'criterion': c.get('name') or c.get('criterion'),
-                        'points': _num(c.get('points'))})
-        return out
     out = []
     for line in text.splitlines():
         if not line.strip().startswith('|'):
