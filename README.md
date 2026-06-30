@@ -1,4 +1,21 @@
-# Canvas Course Builder
+<p align="center">
+  <img src="assets/banner.jpeg" width="760" alt="Canvas Course Builder — a Claude Code plugin">
+</p>
+
+<h1 align="center">Canvas Course Builder</h1>
+
+<p align="center">
+  <em>Drop your syllabus. Get quizzes and rubrics that import clean and add up.</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/v/release/emaduneme/canvas-course-builder?style=flat-square&color=D24B40&label=release&display_name=tag" alt="Release">
+  <img src="https://img.shields.io/badge/Claude%20Code-plugin-D24B40?style=flat-square" alt="Claude Code plugin">
+  <img src="https://img.shields.io/github/license/emaduneme/canvas-course-builder?style=flat-square&color=555" alt="License">
+  <img src="https://img.shields.io/github/stars/emaduneme/canvas-course-builder?style=flat-square&color=555&label=stars" alt="Stars">
+</p>
+
+---
 
 Building a course in Canvas is mostly assembly work: turning a syllabus, a workbook, and a pile of slides into quizzes and rubrics that import cleanly and grade correctly. This tool does that assembly for you.
 
